@@ -58,7 +58,7 @@ def test_api_heath_endpoint(base_path: Path, monkeypatch: pytest.MonkeyPatch):
             client = TestClient(app)
             response = client.get("/")
             assert response.status_code == 200
-            HeathCheck.validate(response.json())
+            HeathCheck.model_validate(response.json())
 
 
 @pytest.mark.skipif(
