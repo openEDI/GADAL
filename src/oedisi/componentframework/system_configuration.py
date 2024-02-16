@@ -122,8 +122,13 @@ class Component(BaseModel):
     def validate_image(cls, v, info: ValidationInfo):
         """Add latest tag to name if not specified."""
         if not v:
-            return f"{DOCKER_HUB_USER}/{APP_NAME}_{info.data['name']}:latest"
+            return f"{DOCKER_HUB_USER}/{APP_NAME}_{info.data['type']}:latest"
         return v
+
+
+class ComponentStruct(BaseModel):
+    component: Component
+    links: List[Link]
 
 
 class WiringDiagram(BaseModel):
