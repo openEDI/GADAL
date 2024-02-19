@@ -7,8 +7,6 @@ import os
 from pathlib import Path
 
 
-from distutils.dir_util import copy_tree
-
 from oedisi.componentframework.basic_component import (
     basic_component,
     ComponentDescription,
@@ -45,7 +43,8 @@ def bad_type_checker(type, x):
 def get_basic_component(filename):
     # before, the runner would use the directory given _in_ the component description
     # which may be inaccurate
-    comp_desc = ComponentDescription.parse_file(filename)
+    with open(filename) as f:
+        comp_desc = ComponentDescription.model_validate(json.load(f))
     comp_desc.directory = os.path.dirname(filename)
     return basic_component(comp_desc, bad_type_checker)
 
@@ -122,7 +121,8 @@ def build(
         }
 
     click.echo(f"Loading system json {system}")
-    wiring_diagram = WiringDiagram.parse_file(system)
+    with open(system) as f:
+        wiring_diagram = WiringDiagram.model_validate(json.load(f))
 
     click.echo(f"Building system in {target_directory}")
 
@@ -131,7 +131,7 @@ def build(
     )
 
     with open(f"{target_directory}/system_runner.json", "w") as f:
-        f.write(runner_config.json(indent=2))
+        f.write(runner_config.model_dump_json(indent=2))
 
     yaml_file_path = f"{target_directory}/docker-compose.yml"
 
@@ -145,9 +145,7 @@ def build(
         )
 
 
-def validate_optional_inputs(
-    wiring_diagram: WiringDiagram, component_dict_of_files: dict
-):
+def validate_optional_inputs(wiring_diagram: WiringDiagram, component_dict_of_files: dict):
     for component in wiring_diagram.components:
         assert hasattr(
             component, "host"
@@ -212,7 +210,7 @@ def clone_broker(yaml_file_path, target_directory):
     broker_folder = os.path.join(target_directory, "broker")
     if not os.path.exists(broker_folder):
         os.makedirs(broker_folder)
-    copy_tree("./broker", broker_folder)
+    shutil.copytree("./broker", broker_folder, dirs_exist_ok=True)
     shutil.copy(yaml_file_path, broker_folder)
     return
 
@@ -389,9 +387,7 @@ def run_mc(runner, kubernetes, docker_compose):
     type=click.Path(),
     help="Target directory to put the system in",
 )
-@click.option(
-    "--component-desc", type=click.Path(), help="Path to component description"
-)
+@click.option("--component-desc", type=click.Path(), help="Path to component description")
 @click.option(
     "--parameters",
     default=None,
@@ -435,7 +431,8 @@ def test_description(target_directory, component_desc, parameters):
     Create and run system with wiring diagram
     """
 
-    comp_desc = ComponentDescription.parse_file(component_desc)
+    with open(component_desc) as f:
+        comp_desc = ComponentDescription.model_validate(json.load(f))
     comp_desc.directory = os.path.dirname(component_desc)
 
     if parameters is None:
@@ -473,7 +470,7 @@ def test_description(target_directory, component_desc, parameters):
     )
     runner_config, _ = remove_from_runner_config(runner_config, "broker")
     with open(f"{target_directory}/system_runner.json", "w") as f:
-        f.write(runner_config.json())
+        f.write(runner_config.model_dump_json())
 
     background_runner = subprocess.Popen(
         ["helics", "run", f"--path={target_directory}/system_runner.json"]
@@ -504,13 +501,13 @@ def remove_from_runner_config(runner_config, element):
 def remove_from_json(system_json, element):
     "Remove federate from configuration and resave with revised.json"
     with open(system_json, "r") as f:
-        runner_config = RunnerConfig.parse_obj(json.load(f))
+        runner_config = RunnerConfig.model_validate(json.load(f))
         new_config, without_feds = remove_from_runner_config(runner_config, element)
 
         new_path = system_json + "revised.json"
         click.echo(f"Saving new json to {new_path}")
         with open(new_path, "w") as f:
-            f.write(new_config.json())
+            f.write(new_config.model_dump_json())
         return new_config, new_path, without_feds
 
 

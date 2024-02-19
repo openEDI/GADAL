@@ -15,7 +15,6 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: BSD License",
   "Natural Language :: English",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -25,7 +24,7 @@ classifiers = [
 dependencies = [
   "helics-apps>=3.2.1",
   "helics>=3.2.1",
-  "pydantic>=1.7,<2",
+  "pydantic~=2.0",
   "psutil",
   "click",
   "pyyaml~=6.0",

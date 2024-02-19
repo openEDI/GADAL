@@ -1,0 +1,61 @@
+{
+    "$defs": {
+        "Command": {
+            "description": "JSON Configuration for external object commands.\n\n    obj_name -- name of the object.\n    obj_prop -- name of the property.\n    obj_val -- val of the property.\n    ",
+            "properties": {
+                "obj_name": {
+                    "title": "Obj Name",
+                    "type": "string"
+                },
+                "obj_property": {
+                    "title": "Obj Property",
+                    "type": "string"
+                },
+                "val": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "integer"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "items": {
+                                "type": "number"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "title": "Val"
+                }
+            },
+            "required": [
+                "obj_name",
+                "obj_property",
+                "val"
+            ],
+            "title": "Command",
+            "type": "object"
+        }
+    },
+    "items": {
+        "$ref": "#/$defs/Command"
+    },
+    "title": "RootModel[List[Command]]",
+    "type": "array"
+}
